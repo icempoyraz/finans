@@ -242,10 +242,34 @@
   }
 
   .expenses-heading {
-    font-size: 15px;
-    font-weight: 700;
+    font-size: 22px;
+    font-weight: 300;
     color: var(--text-heading);
-    margin: 4px 0 0 2px;
+    text-align: left;
+    margin: 8px 0 0 2px;
+  }
+
+  .expense-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 40px 24px;
+    text-align: center;
+  }
+
+  .expense-empty svg {
+    width: 36px;
+    height: 36px;
+    stroke: var(--text-muted, var(--light-gray));
+  }
+
+  .expense-empty p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+    max-width: 260px;
   }
 
   .expense-list {
@@ -494,14 +518,14 @@
       <div class="budget-ring-wrap">
         <div class="budget-ring" id="budgetRing">
           <div class="budget-ring-inner">
-            <span class="budget-ring-label">toplam bütçemiz</span>
+            <span class="budget-ring-label" id="budgetRingLabel"></span>
             <span class="budget-ring-amount" id="budgetRingAmount"></span>
             <span class="budget-ring-try">try</span>
           </div>
         </div>
       </div>
 
-      <h3 class="expenses-heading">harcamalar</h3>
+      <h1 class="expenses-heading">harcamalar</h1>
 
       <div class="expense-list" id="expenseList"></div>
 
@@ -635,6 +659,7 @@
   var expenseList = document.getElementById('expenseList');
   var budgetRing = document.getElementById('budgetRing');
   var budgetRingAmount = document.getElementById('budgetRingAmount');
+  var budgetRingLabel = document.getElementById('budgetRingLabel');
 
   var deleteModal = document.getElementById('deleteModal');
   var deleteExpenseName = document.getElementById('deleteExpenseName');
@@ -642,6 +667,8 @@
   var deleteConfirmBtn = document.getElementById('deleteConfirmBtn');
   var pendingSwipeWrap = null;
   var pendingDeleteId = null;
+
+  budgetRingLabel.textContent = TOTAL_BUDGET.toLocaleString('tr-TR');
 
   function parseAmount(exp) {
     return parseFloat(exp.main.replace(/\./g, '')) + parseFloat(exp.dec) / 100;
@@ -659,10 +686,6 @@
     return exp.on ? "haziran'a çek" : "temmuz'a aktar";
   }
 
-  var currentRingValue = TOTAL_BUDGET;
-  var ringInitialized = false;
-  var ringAnimFrame = null;
-
   function ringAmountHTML(value) {
     var rounded = Math.round(value * 100) / 100;
     if (rounded < 0) rounded = 0;
@@ -672,17 +695,21 @@
     return mainPart.toLocaleString('tr-TR') + '<sup>,' + String(decPart).padStart(2, '0') + '</sup>';
   }
 
+  var currentRingValue = TOTAL_BUDGET;
+  var ringAmountInitialized = false;
+  var ringAmountAnimFrame = null;
+
   function animateRingAmount(newValue) {
-    if (!ringInitialized) {
+    if (!ringAmountInitialized) {
       currentRingValue = newValue;
-      ringInitialized = true;
+      ringAmountInitialized = true;
       budgetRingAmount.innerHTML = ringAmountHTML(newValue);
       return;
     }
     var start = currentRingValue;
     var startTime = null;
-    var duration = 450;
-    if (ringAnimFrame) cancelAnimationFrame(ringAnimFrame);
+    var duration = 500;
+    if (ringAmountAnimFrame) cancelAnimationFrame(ringAmountAnimFrame);
     function step(ts) {
       if (!startTime) startTime = ts;
       var progress = Math.min(1, (ts - startTime) / duration);
@@ -690,35 +717,80 @@
       var value = start + (newValue - start) * eased;
       budgetRingAmount.innerHTML = ringAmountHTML(value);
       if (progress < 1) {
-        ringAnimFrame = requestAnimationFrame(step);
+        ringAmountAnimFrame = requestAnimationFrame(step);
       } else {
         currentRingValue = newValue;
       }
     }
-    ringAnimFrame = requestAnimationFrame(step);
+    ringAmountAnimFrame = requestAnimationFrame(step);
+  }
+
+  function buildRingStops(denom) {
+    var angle = 0;
+    var arr = [];
+    expenses.forEach(function (exp) {
+      var amt = exp.on ? 0 : parseAmount(exp);
+      var pct = denom > 0 ? Math.max(0, Math.min(1, amt / denom)) : 0;
+      var start = angle;
+      var end = angle + pct * 360;
+      arr.push({ color: exp.color, start: start, end: end });
+      angle = end;
+    });
+    arr.push({ color: 'var(--border-purple)', start: angle, end: 360 });
+    return arr;
+  }
+
+  function applyRingStops(stopsArr) {
+    var css = stopsArr.map(function (s) {
+      return s.color + ' ' + s.start.toFixed(2) + 'deg ' + s.end.toFixed(2) + 'deg';
+    }).join(', ');
+    budgetRing.style.background = 'conic-gradient(' + css + ')';
+  }
+
+  var currentRingStops = null;
+  var ringStopsAnimFrame = null;
+
+  function animateRingStops(newStops) {
+    if (!currentRingStops || currentRingStops.length !== newStops.length) {
+      currentRingStops = newStops;
+      applyRingStops(newStops);
+      return;
+    }
+    var oldStops = currentRingStops;
+    var startTime = null;
+    var duration = 500;
+    if (ringStopsAnimFrame) cancelAnimationFrame(ringStopsAnimFrame);
+    function step(ts) {
+      if (!startTime) startTime = ts;
+      var progress = Math.min(1, (ts - startTime) / duration);
+      var eased = 1 - Math.pow(1 - progress, 3);
+      var interp = oldStops.map(function (o, i) {
+        var n = newStops[i];
+        return {
+          color: n.color,
+          start: o.start + (n.start - o.start) * eased,
+          end: o.end + (n.end - o.end) * eased
+        };
+      });
+      applyRingStops(interp);
+      if (progress < 1) {
+        ringStopsAnimFrame = requestAnimationFrame(step);
+      } else {
+        currentRingStops = newStops;
+        applyRingStops(newStops);
+      }
+    }
+    ringStopsAnimFrame = requestAnimationFrame(step);
   }
 
   function updateBudgetRing() {
-    var deferredSum = 0;
+    var activeSum = 0;
     expenses.forEach(function (exp) {
-      if (exp.on) deferredSum += parseAmount(exp);
+      if (!exp.on) activeSum += parseAmount(exp);
     });
-    var displayedTotal = Math.max(0, TOTAL_BUDGET - deferredSum);
-    var denom = displayedTotal > 0 ? displayedTotal : 1;
+    var displayedTotal = Math.max(0, TOTAL_BUDGET - activeSum);
 
-    var angle = 0;
-    var stops = [];
-    expenses.forEach(function (exp) {
-      if (exp.on) return;
-      var pct = Math.max(0, Math.min(1, parseAmount(exp) / denom));
-      var start = angle;
-      var end = angle + pct * 360;
-      stops.push(exp.color + ' ' + start.toFixed(2) + 'deg ' + end.toFixed(2) + 'deg');
-      angle = end;
-    });
-    if (angle < 360) stops.push('var(--border-purple) ' + angle.toFixed(2) + 'deg 360deg');
-    budgetRing.style.background = 'conic-gradient(' + stops.join(', ') + ')';
-
+    animateRingStops(buildRingStops(TOTAL_BUDGET));
     animateRingAmount(displayedTotal);
   }
 
@@ -834,6 +906,12 @@
       window.addEventListener('mouseup', cEnd);
     });
 
+    expenseList.querySelectorAll('.swipe-action').forEach(function (btn) {
+      btn.addEventListener('touchstart', function (e) { e.stopPropagation(); }, { passive: true });
+      btn.addEventListener('touchend', function (e) { e.stopPropagation(); }, { passive: true });
+      btn.addEventListener('mousedown', function (e) { e.stopPropagation(); });
+    });
+
     expenseList.querySelectorAll('.action-delete').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var swipeWrap = btn.closest('.swipe-wrap');
@@ -847,8 +925,14 @@
     });
   }
 
+  var EMPTY_STATE_HTML = '' +
+    '<div class="expense-empty">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg>' +
+      '<p>hiç harcama kaydı bulunmuyor</p>' +
+    '</div>';
+
   function renderExpenses() {
-    expenseList.innerHTML = expenses.map(cardHTML).join('');
+    expenseList.innerHTML = expenses.length ? expenses.map(cardHTML).join('') : EMPTY_STATE_HTML;
     attachCardBehaviors();
     updateBudgetRing();
   }

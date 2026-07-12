@@ -15,6 +15,7 @@
     --purple-dark: #534AB7;
     --text-primary: #1A1A1A;
     --text-secondary: #6B6B6B;
+    --text-heading: #2E2A3D;
     --light-gray: #B7B7B7;
     --soft-red: #E2726B;
   }
@@ -135,29 +136,17 @@
   .expense-card {
     background: #ffffff;
     border-radius: 16px;
-    padding: 10px 14px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    grid-template-rows: auto auto;
-    row-gap: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    padding: 0 14px;
+    min-height: 92px;
     position: relative;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     z-index: 1;
   }
 
-  .expense-desc-amount {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .expense-desc {
-    font-size: 15px;
-    font-weight: 400;
-    color: var(--text-primary);
-    margin: 0 0 2px 0;
-  }
-
   .expense-amount {
+    position: absolute;
+    top: 12px;
+    left: 14px;
     font-size: 20px;
     font-weight: 400;
     color: var(--soft-red);
@@ -171,19 +160,98 @@
     color: var(--light-gray);
   }
 
-  .category-tag {
-    grid-column: 1;
-    grid-row: 2;
-    justify-self: start;
-    align-self: center;
-    font-size: 11px;
+  .expense-card:has(.toggle.on) .expense-amount {
+    color: var(--light-gray);
+  }
+
+  .expense-desc {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    transform: translateY(-50%);
+    font-size: 12px;
+    font-weight: 300;
+    letter-spacing: 0.01em;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .color-dot {
+    position: absolute;
+    bottom: 12px;
+    left: 14px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+
+  .budget-ring-wrap {
+    display: flex;
+    justify-content: center;
+    padding-top: 4px;
+  }
+
+  .budget-ring {
+    width: 132px;
+    height: 132px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.4s ease;
+  }
+
+  .budget-ring-inner {
+    width: 98px;
+    height: 98px;
+    border-radius: 50%;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .budget-ring-label {
+    font-size: 10px;
     font-weight: 600;
+    color: var(--text-secondary);
     letter-spacing: 0.02em;
-    color: var(--purple-dark);
-    background: var(--bg-purple);
-    border-radius: 20px;
-    padding: 4px 10px;
-    width: fit-content;
+  }
+
+  .budget-ring-amount {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-heading);
+  }
+
+  .budget-ring-amount sup {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--light-gray);
+    top: -0.5em;
+  }
+
+  .budget-ring-try {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--light-gray);
+    margin-top: -2px;
+  }
+
+  .expenses-heading {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-heading);
+    margin: 4px 0 0 2px;
+  }
+
+  .expense-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
 
   .swipe-wrap {
@@ -229,11 +297,23 @@
     background: var(--soft-red);
   }
 
+  .toggle-group {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .toggle-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
   .toggle {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: end;
-    align-self: start;
     width: 38px;
     height: 22px;
     border-radius: 11px;
@@ -242,6 +322,7 @@
     cursor: pointer;
     border: none;
     padding: 0;
+    flex-shrink: 0;
     transition: background 0.2s ease;
   }
 
@@ -266,14 +347,131 @@
     left: 18px;
   }
 
+  .edge-dots {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    cursor: pointer;
+    padding: 6px 3px;
+  }
+
+  .edge-dots span {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--border-purple);
+  }
+
+  .edge-dots-left {
+    left: 2px;
+  }
+
+  .edge-dots-right {
+    right: 2px;
+  }
+
   @media (min-width: 900px) {
     .page-track {
       align-items: center !important;
     }
 
-    .swipe-wrap {
+    .expense-list {
       width: 50%;
     }
+
+    .swipe-wrap {
+      width: 100%;
+    }
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 20, 43, 0.45);
+    backdrop-filter: blur(2px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 24px;
+  }
+
+  .modal-overlay.show {
+    display: flex;
+  }
+
+  .modal-box {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 26px 22px 18px;
+    max-width: 300px;
+    width: 100%;
+    box-shadow: 0 12px 32px rgba(46, 38, 64, 0.18);
+    text-align: center;
+  }
+
+  .modal-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #FBEAE8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+  }
+
+  .modal-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--soft-red);
+  }
+
+  .modal-text {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-heading);
+    margin: 0 0 4px 0;
+    line-height: 1.4;
+  }
+
+  .modal-text #deleteExpenseName {
+    font-weight: 700;
+  }
+
+  .modal-subtext {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin: 0 0 18px 0;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .modal-btn {
+    flex: 1;
+    border: none;
+    border-radius: 9px;
+    padding: 9px 0;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  .modal-cancel {
+    background: var(--bg-purple);
+    color: var(--text-heading);
+  }
+
+  .modal-confirm {
+    background: var(--soft-red);
+    color: #ffffff;
   }
 </style>
 </head>
@@ -293,50 +491,19 @@
     </div>
     <div class="page page-track">
 
-      <div class="swipe-wrap">
-        <div class="swipe-actions">
-          <button class="swipe-action action-edit" aria-label="düzenle"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></button>
-          <button class="swipe-action action-delete" aria-label="sil"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path></svg></button>
-        </div>
-        <div class="expense-card">
-          <div class="expense-desc-amount">
-            <p class="expense-desc">market alışverişi</p>
-            <p class="expense-amount">245<sup>,90 try</sup></p>
+      <div class="budget-ring-wrap">
+        <div class="budget-ring" id="budgetRing">
+          <div class="budget-ring-inner">
+            <span class="budget-ring-label">toplam bütçemiz</span>
+            <span class="budget-ring-amount" id="budgetRingAmount"></span>
+            <span class="budget-ring-try">try</span>
           </div>
-          <button class="toggle" aria-label="toggle"></button>
-          <div class="category-tag">market</div>
         </div>
       </div>
 
-      <div class="swipe-wrap">
-        <div class="swipe-actions">
-          <button class="swipe-action action-edit" aria-label="düzenle"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></button>
-          <button class="swipe-action action-delete" aria-label="sil"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path></svg></button>
-        </div>
-        <div class="expense-card">
-          <div class="expense-desc-amount">
-            <p class="expense-desc">kira</p>
-            <p class="expense-amount">8.500<sup>,00 try</sup></p>
-          </div>
-          <button class="toggle on" aria-label="toggle"></button>
-          <div class="category-tag">fatura</div>
-        </div>
-      </div>
+      <h3 class="expenses-heading">harcamalar</h3>
 
-      <div class="swipe-wrap">
-        <div class="swipe-actions">
-          <button class="swipe-action action-edit" aria-label="düzenle"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></button>
-          <button class="swipe-action action-delete" aria-label="sil"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path></svg></button>
-        </div>
-        <div class="expense-card">
-          <div class="expense-desc-amount">
-            <p class="expense-desc">kahve</p>
-            <p class="expense-amount">38<sup>,50 try</sup></p>
-          </div>
-          <button class="toggle" aria-label="toggle"></button>
-          <div class="category-tag">kişisel</div>
-        </div>
-      </div>
+      <div class="expense-list" id="expenseList"></div>
 
     </div>
     <div class="page">
@@ -346,6 +513,20 @@
     <div class="page">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5Z"></path></svg>
       <p>Birikim takibi burada olacak</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-box">
+    <div class="modal-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path></svg>
+    </div>
+    <p class="modal-text"><span id="deleteExpenseName">bu kayıt</span> kaydı silinsin mi?</p>
+    <p class="modal-subtext">bu işlem geri alınamaz</p>
+    <div class="modal-actions">
+      <button class="modal-btn modal-cancel" id="deleteCancelBtn">iptal</button>
+      <button class="modal-btn modal-confirm" id="deleteConfirmBtn">evet</button>
     </div>
   </div>
 </div>
@@ -439,75 +620,272 @@
   });
   window.addEventListener('mouseup', onEnd);
 
-  document.querySelectorAll('.toggle').forEach(function (t) {
-    t.addEventListener('click', function () {
-      t.classList.toggle('on');
+  /* ---------- harcama kayıtları: veri modeli + render ---------- */
+
+  var TOTAL_BUDGET = 15000;
+  var COLOR_PALETTE = ['#F2A93B', '#4FB3A0', '#6C8FE0', '#E0A6D6', '#7BC086', '#E2726B', '#D9A441', '#5FA8D3'];
+  var OPEN_WIDTH = 80;
+
+  var expenses = [
+    { id: 1, desc: 'market alışverişi', main: '245', dec: '90', on: false, color: COLOR_PALETTE[0] },
+    { id: 2, desc: 'kira', main: '8.500', dec: '00', on: true, color: COLOR_PALETTE[1] },
+    { id: 3, desc: 'kahve', main: '38', dec: '50', on: false, color: COLOR_PALETTE[2] }
+  ];
+
+  var expenseList = document.getElementById('expenseList');
+  var budgetRing = document.getElementById('budgetRing');
+  var budgetRingAmount = document.getElementById('budgetRingAmount');
+
+  var deleteModal = document.getElementById('deleteModal');
+  var deleteExpenseName = document.getElementById('deleteExpenseName');
+  var deleteCancelBtn = document.getElementById('deleteCancelBtn');
+  var deleteConfirmBtn = document.getElementById('deleteConfirmBtn');
+  var pendingSwipeWrap = null;
+  var pendingDeleteId = null;
+
+  function parseAmount(exp) {
+    return parseFloat(exp.main.replace(/\./g, '')) + parseFloat(exp.dec) / 100;
+  }
+
+  function effectiveAmount(exp) {
+    return exp.on ? 0 : parseAmount(exp);
+  }
+
+  function amountHTML(exp) {
+    return exp.main + '<sup>,' + exp.dec + ' try</sup>';
+  }
+
+  function toggleLabelHTML(exp) {
+    return exp.on ? "haziran'a çek" : "temmuz'a aktar";
+  }
+
+  var currentRingValue = TOTAL_BUDGET;
+  var ringInitialized = false;
+  var ringAnimFrame = null;
+
+  function ringAmountHTML(value) {
+    var rounded = Math.round(value * 100) / 100;
+    if (rounded < 0) rounded = 0;
+    var mainPart = Math.trunc(rounded);
+    var decPart = Math.round((rounded - mainPart) * 100);
+    if (decPart >= 100) { mainPart += 1; decPart = 0; }
+    return mainPart.toLocaleString('tr-TR') + '<sup>,' + String(decPart).padStart(2, '0') + '</sup>';
+  }
+
+  function animateRingAmount(newValue) {
+    if (!ringInitialized) {
+      currentRingValue = newValue;
+      ringInitialized = true;
+      budgetRingAmount.innerHTML = ringAmountHTML(newValue);
+      return;
+    }
+    var start = currentRingValue;
+    var startTime = null;
+    var duration = 450;
+    if (ringAnimFrame) cancelAnimationFrame(ringAnimFrame);
+    function step(ts) {
+      if (!startTime) startTime = ts;
+      var progress = Math.min(1, (ts - startTime) / duration);
+      var eased = 1 - Math.pow(1 - progress, 3);
+      var value = start + (newValue - start) * eased;
+      budgetRingAmount.innerHTML = ringAmountHTML(value);
+      if (progress < 1) {
+        ringAnimFrame = requestAnimationFrame(step);
+      } else {
+        currentRingValue = newValue;
+      }
+    }
+    ringAnimFrame = requestAnimationFrame(step);
+  }
+
+  function updateBudgetRing() {
+    var deferredSum = 0;
+    expenses.forEach(function (exp) {
+      if (exp.on) deferredSum += parseAmount(exp);
     });
+    var displayedTotal = Math.max(0, TOTAL_BUDGET - deferredSum);
+    var denom = displayedTotal > 0 ? displayedTotal : 1;
+
+    var angle = 0;
+    var stops = [];
+    expenses.forEach(function (exp) {
+      if (exp.on) return;
+      var pct = Math.max(0, Math.min(1, parseAmount(exp) / denom));
+      var start = angle;
+      var end = angle + pct * 360;
+      stops.push(exp.color + ' ' + start.toFixed(2) + 'deg ' + end.toFixed(2) + 'deg');
+      angle = end;
+    });
+    if (angle < 360) stops.push('var(--border-purple) ' + angle.toFixed(2) + 'deg 360deg');
+    budgetRing.style.background = 'conic-gradient(' + stops.join(', ') + ')';
+
+    animateRingAmount(displayedTotal);
+  }
+
+  function cardHTML(exp) {
+    return '' +
+      '<div class="swipe-wrap" data-id="' + exp.id + '">' +
+        '<div class="swipe-actions">' +
+          '<button class="swipe-action action-edit" aria-label="düzenle"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></button>' +
+          '<button class="swipe-action action-delete" aria-label="sil"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path></svg></button>' +
+        '</div>' +
+        '<div class="expense-card">' +
+          '<div class="edge-dots edge-dots-left" data-edge="left"><span></span><span></span><span></span></div>' +
+          '<div class="edge-dots edge-dots-right" data-edge="right"><span></span><span></span><span></span></div>' +
+          '<p class="expense-amount">' + amountHTML(exp) + '</p>' +
+          '<p class="expense-desc">' + exp.desc + '</p>' +
+          '<div class="toggle-group">' +
+            '<span class="toggle-label">' + toggleLabelHTML(exp) + '</span>' +
+            '<button class="toggle' + (exp.on ? ' on' : '') + '" aria-label="toggle"></button>' +
+          '</div>' +
+          '<div class="color-dot" style="background:' + exp.color + ';' + (exp.on ? ' visibility:hidden;' : '') + '"></div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function closeCardSwipe(swipeWrap) {
+    var card = swipeWrap.querySelector('.expense-card');
+    card.style.transition = 'transform 0.25s ease';
+    card.style.transform = 'translateX(0px)';
+  }
+
+  function attachCardBehaviors() {
+    expenseList.querySelectorAll('.toggle').forEach(function (t) {
+      t.addEventListener('click', function () {
+        var swipeWrap = t.closest('.swipe-wrap');
+        var id = parseInt(swipeWrap.dataset.id, 10);
+        var exp = expenses.find(function (e) { return e.id === id; });
+        exp.on = !exp.on;
+        t.classList.toggle('on', exp.on);
+        swipeWrap.querySelector('.toggle-label').innerHTML = toggleLabelHTML(exp);
+        swipeWrap.querySelector('.color-dot').style.visibility = exp.on ? 'hidden' : 'visible';
+        updateBudgetRing();
+      });
+    });
+
+    expenseList.querySelectorAll('.expense-card').forEach(function (card) {
+      var cStartX = 0, cStartY = 0, cDragging = false, cLocked = null, cBaseX = 0, cCurrentX = 0;
+
+      function setX(x, animate) {
+        card.style.transition = animate ? 'transform 0.25s ease' : 'none';
+        card.style.transform = 'translateX(' + x + 'px)';
+        cCurrentX = x;
+      }
+
+      function cStart(x, y) {
+        cDragging = true;
+        cStartX = x;
+        cStartY = y;
+        cLocked = null;
+      }
+
+      function cMove(x, y, e) {
+        if (!cDragging) return;
+        var dx = x - cStartX, dy = y - cStartY;
+        if (cLocked === null) {
+          cLocked = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+        }
+        if (cLocked !== 'x') return;
+        if (e && e.cancelable) e.preventDefault();
+        setX(cBaseX + dx, false);
+      }
+
+      function cEnd() {
+        if (!cDragging) return;
+        cDragging = false;
+        if (cLocked === 'x') {
+          if (cCurrentX < -OPEN_WIDTH / 2) { setX(-OPEN_WIDTH, true); cBaseX = -OPEN_WIDTH; }
+          else if (cCurrentX > OPEN_WIDTH / 2) { setX(OPEN_WIDTH, true); cBaseX = OPEN_WIDTH; }
+          else { setX(0, true); cBaseX = 0; }
+        }
+        cLocked = null;
+      }
+
+      card.querySelectorAll('.edge-dots').forEach(function (dots) {
+        dots.addEventListener('click', function (e) {
+          e.stopPropagation();
+          var target = dots.dataset.edge === 'left' ? OPEN_WIDTH : -OPEN_WIDTH;
+          target = (cBaseX === target) ? 0 : target;
+          setX(target, true);
+          cBaseX = target;
+        });
+      });
+
+      card.addEventListener('touchstart', function (e) {
+        e.stopPropagation();
+        cStart(e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: true });
+      card.addEventListener('touchmove', function (e) {
+        e.stopPropagation();
+        cMove(e.touches[0].clientX, e.touches[0].clientY, e);
+      }, { passive: false });
+      card.addEventListener('touchend', function (e) {
+        e.stopPropagation();
+        cEnd();
+      });
+
+      card.addEventListener('mousedown', function (e) {
+        e.stopPropagation();
+        cStart(e.clientX, e.clientY);
+      });
+      window.addEventListener('mousemove', function (e) {
+        cMove(e.clientX, e.clientY, e);
+      });
+      window.addEventListener('mouseup', cEnd);
+    });
+
+    expenseList.querySelectorAll('.action-delete').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var swipeWrap = btn.closest('.swipe-wrap');
+        var id = parseInt(swipeWrap.dataset.id, 10);
+        var exp = expenses.find(function (e) { return e.id === id; });
+        pendingSwipeWrap = swipeWrap;
+        pendingDeleteId = id;
+        deleteExpenseName.textContent = exp.desc;
+        deleteModal.classList.add('show');
+      });
+    });
+  }
+
+  function renderExpenses() {
+    expenseList.innerHTML = expenses.map(cardHTML).join('');
+    attachCardBehaviors();
+    updateBudgetRing();
+  }
+
+  deleteCancelBtn.addEventListener('click', function () {
+    deleteModal.classList.remove('show');
+    if (pendingSwipeWrap) closeCardSwipe(pendingSwipeWrap);
+    pendingSwipeWrap = null;
+    pendingDeleteId = null;
   });
 
-  var OPEN_WIDTH = 64;
-
-  document.querySelectorAll('.expense-card').forEach(function (card) {
-    var cStartX = 0, cStartY = 0, cDragging = false, cLocked = null, cBaseX = 0, cCurrentX = 0;
-
-    function setX(x, animate) {
-      card.style.transition = animate ? 'transform 0.25s ease' : 'none';
-      card.style.transform = 'translateX(' + x + 'px)';
-      cCurrentX = x;
+  deleteConfirmBtn.addEventListener('click', function () {
+    deleteModal.classList.remove('show');
+    var idToRemove = pendingDeleteId;
+    var wrapToFade = pendingSwipeWrap;
+    if (wrapToFade) {
+      wrapToFade.style.transition = 'opacity 0.15s ease';
+      wrapToFade.style.opacity = '0';
     }
-
-    function cStart(x, y) {
-      cDragging = true;
-      cStartX = x;
-      cStartY = y;
-      cLocked = null;
-    }
-
-    function cMove(x, y, e) {
-      if (!cDragging) return;
-      var dx = x - cStartX, dy = y - cStartY;
-      if (cLocked === null) {
-        cLocked = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
-      }
-      if (cLocked !== 'x') return;
-      if (e && e.cancelable) e.preventDefault();
-      setX(cBaseX + dx, false);
-    }
-
-    function cEnd() {
-      if (!cDragging) return;
-      cDragging = false;
-      if (cLocked === 'x') {
-        if (cCurrentX < -OPEN_WIDTH / 2) { setX(-OPEN_WIDTH, true); cBaseX = -OPEN_WIDTH; }
-        else if (cCurrentX > OPEN_WIDTH / 2) { setX(OPEN_WIDTH, true); cBaseX = OPEN_WIDTH; }
-        else { setX(0, true); cBaseX = 0; }
-      }
-      cLocked = null;
-    }
-
-    card.addEventListener('touchstart', function (e) {
-      e.stopPropagation();
-      cStart(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: true });
-    card.addEventListener('touchmove', function (e) {
-      e.stopPropagation();
-      cMove(e.touches[0].clientX, e.touches[0].clientY, e);
-    }, { passive: false });
-    card.addEventListener('touchend', function (e) {
-      e.stopPropagation();
-      cEnd();
-    });
-
-    card.addEventListener('mousedown', function (e) {
-      e.stopPropagation();
-      cStart(e.clientX, e.clientY);
-    });
-    window.addEventListener('mousemove', function (e) {
-      cMove(e.clientX, e.clientY, e);
-    });
-    window.addEventListener('mouseup', cEnd);
+    setTimeout(function () {
+      expenses = expenses.filter(function (e) { return e.id !== idToRemove; });
+      renderExpenses();
+    }, 150);
+    pendingSwipeWrap = null;
+    pendingDeleteId = null;
   });
 
+  deleteModal.addEventListener('click', function (e) {
+    if (e.target === deleteModal) {
+      deleteModal.classList.remove('show');
+      if (pendingSwipeWrap) closeCardSwipe(pendingSwipeWrap);
+      pendingSwipeWrap = null;
+      pendingDeleteId = null;
+    }
+  });
+
+  renderExpenses();
   render(false);
 })();
 </script>

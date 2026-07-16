@@ -219,12 +219,67 @@
     font-weight: 600;
     color: var(--text-secondary);
     letter-spacing: 0.02em;
+    cursor: pointer;
+  }
+
+  .budget-ring-label sup {
+    font-size: 8px;
+    font-weight: 600;
+    color: var(--light-gray);
+    top: -0.4em;
+  }
+
+  .budget-edit-wrap {
+    display: inline-flex;
+    align-items: flex-start;
+  }
+
+  .budget-edit-main {
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--purple-dark);
+    letter-spacing: 0.02em;
+    text-align: center;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--purple-dark);
+    outline: none;
+    min-width: 1ch;
+    padding: 0 0 1px 0;
+  }
+
+  .budget-edit-dec-wrap {
+    display: inline-flex;
+    align-items: center;
+    top: -0.4em;
+    color: var(--purple-dark);
+  }
+
+  .budget-edit-dec {
+    font-family: inherit;
+    font-size: 8px;
+    font-weight: 600;
+    color: var(--purple-dark);
+    text-align: center;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--purple-dark);
+    outline: none;
+    min-width: 1ch;
+    padding: 0 0 1px 0;
   }
 
   .budget-ring-amount {
     font-size: 17px;
     font-weight: 700;
     color: var(--text-heading);
+    transition: color 0.2s ease, text-shadow 0.2s ease;
+  }
+
+  .budget-ring-amount.negative {
+    color: var(--soft-red);
+    text-shadow: 0 0 10px rgba(226, 114, 107, 0.65);
   }
 
   .budget-ring-amount sup {
@@ -232,6 +287,10 @@
     font-weight: 600;
     color: var(--light-gray);
     top: -0.5em;
+  }
+
+  .budget-ring-amount.negative sup {
+    color: var(--soft-red);
   }
 
   .budget-ring-try {
@@ -668,7 +727,109 @@
   var pendingSwipeWrap = null;
   var pendingDeleteId = null;
 
-  budgetRingLabel.textContent = TOTAL_BUDGET.toLocaleString('tr-TR');
+  function formatBudgetLabel(value) {
+    var rounded = Math.round(value * 100) / 100;
+    if (rounded < 0) rounded = 0;
+    var mainPart = Math.trunc(rounded);
+    var decPart = Math.round((rounded - mainPart) * 100);
+    if (decPart >= 100) { mainPart += 1; decPart = 0; }
+    return mainPart.toLocaleString('tr-TR') + '<sup>,' + String(decPart).padStart(2, '0') + '</sup>';
+  }
+
+  function startEditTotalBudget() {
+    var rounded = Math.round(TOTAL_BUDGET * 100) / 100;
+    var mainStart = String(Math.trunc(rounded));
+    var decStart = String(Math.round((rounded - Math.trunc(rounded)) * 100)).padStart(2, '0');
+
+    var wrap = document.createElement('span');
+    wrap.className = 'budget-edit-wrap';
+
+    var mainInput = document.createElement('input');
+    mainInput.type = 'text';
+    mainInput.inputMode = 'numeric';
+    mainInput.className = 'budget-edit-main';
+    mainInput.value = mainStart;
+
+    var decSup = document.createElement('sup');
+    decSup.className = 'budget-edit-dec-wrap';
+
+    var comma = document.createTextNode(',');
+
+    var decInput = document.createElement('input');
+    decInput.type = 'text';
+    decInput.inputMode = 'numeric';
+    decInput.maxLength = 2;
+    decInput.className = 'budget-edit-dec';
+    decInput.value = decStart;
+
+    decSup.appendChild(comma);
+    decSup.appendChild(decInput);
+    wrap.appendChild(mainInput);
+    wrap.appendChild(decSup);
+
+    function sizeInput(el, minCh) {
+      el.style.width = Math.max(minCh, el.value.length) + 'ch';
+    }
+    sizeInput(mainInput, 1);
+    sizeInput(decInput, 1);
+
+    budgetRingLabel.replaceWith(wrap);
+    mainInput.focus();
+    mainInput.select();
+
+    var committed = false;
+
+    function commit() {
+      if (committed) return;
+      committed = true;
+      var mainRaw = mainInput.value.replace(/[^0-9]/g, '') || '0';
+      var decRaw = (decInput.value.replace(/[^0-9]/g, '') || '0').padEnd(2, '0').slice(0, 2);
+      var val = parseFloat(mainRaw + '.' + decRaw);
+      if (!isNaN(val) && val >= 0) {
+        TOTAL_BUDGET = val;
+      }
+      wrap.replaceWith(budgetRingLabel);
+      budgetRingLabel.innerHTML = formatBudgetLabel(TOTAL_BUDGET);
+      updateBudgetRing();
+    }
+
+    wrap.addEventListener('focusout', function (e) {
+      if (!wrap.contains(e.relatedTarget)) commit();
+    });
+
+    mainInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        commit();
+      } else if (e.key === ',' || e.key === '.') {
+        e.preventDefault();
+        decInput.focus();
+        decInput.select();
+      }
+    });
+    mainInput.addEventListener('input', function () {
+      mainInput.value = mainInput.value.replace(/[^0-9]/g, '');
+      sizeInput(mainInput, 1);
+    });
+
+    decInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        commit();
+      } else if (e.key === 'Backspace' && decInput.value === '') {
+        e.preventDefault();
+        mainInput.focus();
+        mainInput.setSelectionRange(mainInput.value.length, mainInput.value.length);
+      }
+    });
+    decInput.addEventListener('input', function () {
+      decInput.value = decInput.value.replace(/[^0-9]/g, '').slice(0, 2);
+      sizeInput(decInput, 1);
+    });
+  }
+
+  budgetRingLabel.innerHTML = formatBudgetLabel(TOTAL_BUDGET);
+  budgetRingLabel.addEventListener('click', startEditTotalBudget);
 
   function parseAmount(exp) {
     return parseFloat(exp.main.replace(/\./g, '')) + parseFloat(exp.dec) / 100;
@@ -687,23 +848,28 @@
   }
 
   function ringAmountHTML(value) {
-    var rounded = Math.round(value * 100) / 100;
-    if (rounded < 0) rounded = 0;
+    var isNeg = value < 0;
+    var rounded = Math.round(Math.abs(value) * 100) / 100;
     var mainPart = Math.trunc(rounded);
     var decPart = Math.round((rounded - mainPart) * 100);
     if (decPart >= 100) { mainPart += 1; decPart = 0; }
-    return mainPart.toLocaleString('tr-TR') + '<sup>,' + String(decPart).padStart(2, '0') + '</sup>';
+    return (isNeg ? '−' : '') + mainPart.toLocaleString('tr-TR') + '<sup>,' + String(decPart).padStart(2, '0') + '</sup>';
   }
 
   var currentRingValue = TOTAL_BUDGET;
   var ringAmountInitialized = false;
   var ringAmountAnimFrame = null;
 
+  function renderRingAmount(value) {
+    budgetRingAmount.innerHTML = ringAmountHTML(value);
+    budgetRingAmount.classList.toggle('negative', value < 0);
+  }
+
   function animateRingAmount(newValue) {
     if (!ringAmountInitialized) {
       currentRingValue = newValue;
       ringAmountInitialized = true;
-      budgetRingAmount.innerHTML = ringAmountHTML(newValue);
+      renderRingAmount(newValue);
       return;
     }
     var start = currentRingValue;
@@ -715,7 +881,7 @@
       var progress = Math.min(1, (ts - startTime) / duration);
       var eased = 1 - Math.pow(1 - progress, 3);
       var value = start + (newValue - start) * eased;
-      budgetRingAmount.innerHTML = ringAmountHTML(value);
+      renderRingAmount(value);
       if (progress < 1) {
         ringAmountAnimFrame = requestAnimationFrame(step);
       } else {
@@ -788,7 +954,7 @@
     expenses.forEach(function (exp) {
       if (!exp.on) activeSum += parseAmount(exp);
     });
-    var displayedTotal = Math.max(0, TOTAL_BUDGET - activeSum);
+    var displayedTotal = TOTAL_BUDGET - activeSum;
 
     animateRingStops(buildRingStops(TOTAL_BUDGET));
     animateRingAmount(displayedTotal);

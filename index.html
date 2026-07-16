@@ -773,6 +773,10 @@
     sizeInput(mainInput, 1);
     sizeInput(decInput, 1);
 
+    wrap.addEventListener('touchstart', function (e) { e.stopPropagation(); }, { passive: true });
+    wrap.addEventListener('touchmove', function (e) { e.stopPropagation(); }, { passive: true });
+    wrap.addEventListener('touchend', function (e) { e.stopPropagation(); }, { passive: true });
+
     budgetRingLabel.replaceWith(wrap);
     mainInput.focus();
     mainInput.select();
@@ -829,6 +833,8 @@
   }
 
   budgetRingLabel.innerHTML = formatBudgetLabel(TOTAL_BUDGET);
+  budgetRingLabel.addEventListener('touchstart', function (e) { e.stopPropagation(); }, { passive: true });
+  budgetRingLabel.addEventListener('touchend', function (e) { e.stopPropagation(); }, { passive: true });
   budgetRingLabel.addEventListener('click', startEditTotalBudget);
 
   function parseAmount(exp) {

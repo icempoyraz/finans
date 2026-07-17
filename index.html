@@ -150,6 +150,7 @@
     font-size: 20px;
     font-weight: 400;
     color: var(--soft-red);
+    cursor: pointer;
     margin: 0;
   }
 
@@ -219,7 +220,6 @@
     font-weight: 600;
     color: var(--text-secondary);
     letter-spacing: 0.02em;
-    cursor: pointer;
   }
 
   .budget-ring-label sup {
@@ -227,47 +227,6 @@
     font-weight: 600;
     color: var(--light-gray);
     top: -0.4em;
-  }
-
-  .budget-edit-wrap {
-    display: inline-flex;
-    align-items: flex-start;
-  }
-
-  .budget-edit-main {
-    font-family: inherit;
-    font-size: 10px;
-    font-weight: 600;
-    color: var(--purple-dark);
-    letter-spacing: 0.02em;
-    text-align: center;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--purple-dark);
-    outline: none;
-    min-width: 1ch;
-    padding: 0 0 1px 0;
-  }
-
-  .budget-edit-dec-wrap {
-    display: inline-flex;
-    align-items: center;
-    top: -0.4em;
-    color: var(--purple-dark);
-  }
-
-  .budget-edit-dec {
-    font-family: inherit;
-    font-size: 8px;
-    font-weight: 600;
-    color: var(--purple-dark);
-    text-align: center;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--purple-dark);
-    outline: none;
-    min-width: 1ch;
-    padding: 0 0 1px 0;
   }
 
   .budget-ring-amount {
@@ -556,6 +515,121 @@
     background: var(--soft-red);
     color: #ffffff;
   }
+
+  .amount-editor {
+    position: fixed;
+    inset: 0;
+    background: #ffffff;
+    z-index: 300;
+    display: none;
+    flex-direction: column;
+    padding: 20px 22px calc(18px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .amount-editor.show {
+    display: flex;
+  }
+
+  .amount-editor-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding-top: 6px;
+  }
+
+  .amount-editor-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text-heading);
+    line-height: 1.35;
+    max-width: 200px;
+  }
+
+  .amount-editor-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: var(--bg-purple);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+  }
+
+  .amount-editor-close svg {
+    width: 15px;
+    height: 15px;
+    stroke: var(--text-secondary);
+  }
+
+  .amount-editor-display {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .amount-editor-value {
+    font-size: 42px;
+    font-weight: 400;
+    color: var(--soft-red);
+  }
+
+  .amount-editor-value sup {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--light-gray);
+    top: -1.3em;
+  }
+
+  .amount-editor-keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    padding-bottom: 6px;
+  }
+
+  .keypad-btn {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: none;
+    background: var(--bg-purple);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--text-heading);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .keypad-btn:active {
+    background: var(--border-purple);
+  }
+
+  .keypad-backspace {
+    background: transparent;
+  }
+
+  .keypad-backspace svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--text-secondary);
+  }
+
+  .keypad-confirm {
+    background: var(--purple-dark);
+  }
+
+  .keypad-confirm svg {
+    width: 22px;
+    height: 22px;
+    stroke: #ffffff;
+  }
 </style>
 </head>
 <body>
@@ -611,6 +685,36 @@
       <button class="modal-btn modal-cancel" id="deleteCancelBtn">iptal</button>
       <button class="modal-btn modal-confirm" id="deleteConfirmBtn">evet</button>
     </div>
+  </div>
+</div>
+
+<div class="amount-editor" id="amountEditor">
+  <div class="amount-editor-header">
+    <span class="amount-editor-title">nasıl değişiklik<br>düşündünüz?</span>
+    <button class="amount-editor-close" id="amountEditorClose" aria-label="kapat">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="M6 6l12 12"></path></svg>
+    </button>
+  </div>
+  <div class="amount-editor-display">
+    <span id="amountEditorValue" class="amount-editor-value"></span>
+  </div>
+  <div class="amount-editor-keypad">
+    <button class="keypad-btn" data-digit="1">1</button>
+    <button class="keypad-btn" data-digit="2">2</button>
+    <button class="keypad-btn" data-digit="3">3</button>
+    <button class="keypad-btn" data-digit="4">4</button>
+    <button class="keypad-btn" data-digit="5">5</button>
+    <button class="keypad-btn" data-digit="6">6</button>
+    <button class="keypad-btn" data-digit="7">7</button>
+    <button class="keypad-btn" data-digit="8">8</button>
+    <button class="keypad-btn" data-digit="9">9</button>
+    <button class="keypad-btn keypad-backspace" id="amountEditorBackspace" aria-label="sil">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Z"></path><path d="M13 10l6 6M19 10l-6 6"></path></svg>
+    </button>
+    <button class="keypad-btn" data-digit="0">0</button>
+    <button class="keypad-btn keypad-confirm" id="amountEditorConfirm" aria-label="onayla">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+    </button>
   </div>
 </div>
 
@@ -727,6 +831,69 @@
   var pendingSwipeWrap = null;
   var pendingDeleteId = null;
 
+  /* ---------- harcama tutarı düzenleme ekranı ---------- */
+
+  var amountEditor = document.getElementById('amountEditor');
+  var amountEditorValue = document.getElementById('amountEditorValue');
+  var amountEditorClose = document.getElementById('amountEditorClose');
+  var amountEditorConfirm = document.getElementById('amountEditorConfirm');
+  var amountEditorBackspace = document.getElementById('amountEditorBackspace');
+  var editingExpenseId = null;
+  var editBuffer = '';
+
+  function renderEditorValue() {
+    var cents = parseInt(editBuffer || '0', 10);
+    var mainPart = Math.floor(cents / 100);
+    var decPart = cents % 100;
+    amountEditorValue.innerHTML = mainPart.toLocaleString('tr-TR') + '<sup>,' + String(decPart).padStart(2, '0') + '</sup>';
+  }
+
+  function openAmountEditor(expId) {
+    var exp = expenses.find(function (e) { return e.id === expId; });
+    if (!exp) return;
+    editingExpenseId = expId;
+    var mainDigits = exp.main.replace(/\./g, '');
+    var raw = (mainDigits + exp.dec).replace(/^0+(?=\d)/, '');
+    editBuffer = raw;
+    renderEditorValue();
+    amountEditor.classList.add('show');
+  }
+
+  function closeAmountEditor() {
+    amountEditor.classList.remove('show');
+    editingExpenseId = null;
+    editBuffer = '';
+  }
+
+  amountEditorClose.addEventListener('click', closeAmountEditor);
+
+  amountEditor.querySelectorAll('.keypad-btn[data-digit]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      if (editBuffer.replace(/^0+/, '').length >= 9) return;
+      editBuffer += btn.dataset.digit;
+      renderEditorValue();
+    });
+  });
+
+  amountEditorBackspace.addEventListener('click', function () {
+    editBuffer = editBuffer.slice(0, -1);
+    renderEditorValue();
+  });
+
+  amountEditorConfirm.addEventListener('click', function () {
+    if (editingExpenseId === null) return;
+    var exp = expenses.find(function (e) { return e.id === editingExpenseId; });
+    if (exp) {
+      var cents = parseInt(editBuffer || '0', 10);
+      var mainPart = Math.floor(cents / 100);
+      var decPart = cents % 100;
+      exp.main = mainPart.toLocaleString('tr-TR');
+      exp.dec = String(decPart).padStart(2, '0');
+    }
+    closeAmountEditor();
+    renderExpenses();
+  });
+
   function formatBudgetLabel(value) {
     var rounded = Math.round(value * 100) / 100;
     if (rounded < 0) rounded = 0;
@@ -736,106 +903,8 @@
     return mainPart.toLocaleString('tr-TR') + '<sup>,' + String(decPart).padStart(2, '0') + '</sup>';
   }
 
-  function startEditTotalBudget() {
-    var rounded = Math.round(TOTAL_BUDGET * 100) / 100;
-    var mainStart = String(Math.trunc(rounded));
-    var decStart = String(Math.round((rounded - Math.trunc(rounded)) * 100)).padStart(2, '0');
-
-    var wrap = document.createElement('span');
-    wrap.className = 'budget-edit-wrap';
-
-    var mainInput = document.createElement('input');
-    mainInput.type = 'text';
-    mainInput.inputMode = 'numeric';
-    mainInput.className = 'budget-edit-main';
-    mainInput.value = mainStart;
-
-    var decSup = document.createElement('sup');
-    decSup.className = 'budget-edit-dec-wrap';
-
-    var comma = document.createTextNode(',');
-
-    var decInput = document.createElement('input');
-    decInput.type = 'text';
-    decInput.inputMode = 'numeric';
-    decInput.maxLength = 2;
-    decInput.className = 'budget-edit-dec';
-    decInput.value = decStart;
-
-    decSup.appendChild(comma);
-    decSup.appendChild(decInput);
-    wrap.appendChild(mainInput);
-    wrap.appendChild(decSup);
-
-    function sizeInput(el, minCh) {
-      el.style.width = Math.max(minCh, el.value.length) + 'ch';
-    }
-    sizeInput(mainInput, 1);
-    sizeInput(decInput, 1);
-
-    wrap.addEventListener('touchstart', function (e) { e.stopPropagation(); }, { passive: true });
-    wrap.addEventListener('touchmove', function (e) { e.stopPropagation(); }, { passive: true });
-    wrap.addEventListener('touchend', function (e) { e.stopPropagation(); }, { passive: true });
-
-    budgetRingLabel.replaceWith(wrap);
-    mainInput.focus();
-    mainInput.select();
-
-    var committed = false;
-
-    function commit() {
-      if (committed) return;
-      committed = true;
-      var mainRaw = mainInput.value.replace(/[^0-9]/g, '') || '0';
-      var decRaw = (decInput.value.replace(/[^0-9]/g, '') || '0').padEnd(2, '0').slice(0, 2);
-      var val = parseFloat(mainRaw + '.' + decRaw);
-      if (!isNaN(val) && val >= 0) {
-        TOTAL_BUDGET = val;
-      }
-      wrap.replaceWith(budgetRingLabel);
-      budgetRingLabel.innerHTML = formatBudgetLabel(TOTAL_BUDGET);
-      updateBudgetRing();
-    }
-
-    wrap.addEventListener('focusout', function (e) {
-      if (!wrap.contains(e.relatedTarget)) commit();
-    });
-
-    mainInput.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        commit();
-      } else if (e.key === ',' || e.key === '.') {
-        e.preventDefault();
-        decInput.focus();
-        decInput.select();
-      }
-    });
-    mainInput.addEventListener('input', function () {
-      mainInput.value = mainInput.value.replace(/[^0-9]/g, '');
-      sizeInput(mainInput, 1);
-    });
-
-    decInput.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        commit();
-      } else if (e.key === 'Backspace' && decInput.value === '') {
-        e.preventDefault();
-        mainInput.focus();
-        mainInput.setSelectionRange(mainInput.value.length, mainInput.value.length);
-      }
-    });
-    decInput.addEventListener('input', function () {
-      decInput.value = decInput.value.replace(/[^0-9]/g, '').slice(0, 2);
-      sizeInput(decInput, 1);
-    });
-  }
 
   budgetRingLabel.innerHTML = formatBudgetLabel(TOTAL_BUDGET);
-  budgetRingLabel.addEventListener('touchstart', function (e) { e.stopPropagation(); }, { passive: true });
-  budgetRingLabel.addEventListener('touchend', function (e) { e.stopPropagation(); }, { passive: true });
-  budgetRingLabel.addEventListener('click', startEditTotalBudget);
 
   function parseAmount(exp) {
     return parseFloat(exp.main.replace(/\./g, '')) + parseFloat(exp.dec) / 100;
@@ -994,6 +1063,15 @@
   }
 
   function attachCardBehaviors() {
+    expenseList.querySelectorAll('.expense-amount').forEach(function (amt) {
+      amt.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var swipeWrap = amt.closest('.swipe-wrap');
+        var id = parseInt(swipeWrap.dataset.id, 10);
+        openAmountEditor(id);
+      });
+    });
+
     expenseList.querySelectorAll('.toggle').forEach(function (t) {
       t.addEventListener('click', function () {
         var swipeWrap = t.closest('.swipe-wrap');
